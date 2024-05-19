@@ -15,7 +15,7 @@ documentation = "https://docs.rs/struct_iterable"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-struct_iterable_derive = "0.1.0"
+struct_iterable_derive = { git = "https://github.com/nobie-org/rust_struct_iterable", branch = "matt/feat/named-fields" }
 struct_iterable_internal = "0.1.1"
 
 [lib]
