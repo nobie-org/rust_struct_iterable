@@ -2,8 +2,8 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Fields};
 use struct_iterable_internal::Iterable;
+use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
 /// The `Iterable` proc macro.
 ///
@@ -40,7 +40,7 @@ use struct_iterable_internal::Iterable;
 ///     println!("{}: {:?}", field_name, field_value);
 /// }
 /// ```
-#[proc_macro_derive(Iterable)]
+#[proc_macro_derive(Iterable, attributes(field_name))]
 pub fn derive_iterable(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
@@ -55,7 +55,24 @@ pub fn derive_iterable(input: TokenStream) -> TokenStream {
 
     let fields_iter = fields.iter().map(|field| {
         let field_ident = &field.ident;
-        let field_name = field_ident.as_ref().unwrap().to_string();
+        let mut field_name = field_ident.as_ref().unwrap().to_string();
+
+        for attr in &field.attrs {
+            if attr.path.is_ident("field_name") {
+                if let Ok(Meta::List(meta_list)) = attr.parse_meta() {
+                    for nested in meta_list.nested {
+                        if let NestedMeta::Meta(Meta::NameValue(nv)) = nested {
+                            if nv.path.is_ident("field_name") {
+                                if let syn::Lit::Str(lit_str) = nv.lit {
+                                    field_name = lit_str.value();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         quote! {
             (#field_name, &(self.#field_ident) as &dyn std::any::Any)
         }
