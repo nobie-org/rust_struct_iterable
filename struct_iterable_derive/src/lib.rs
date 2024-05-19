@@ -59,14 +59,10 @@ pub fn derive_iterable(input: TokenStream) -> TokenStream {
 
         for attr in &field.attrs {
             if attr.path.is_ident("field_name") {
-                if let Ok(Meta::List(meta_list)) = attr.parse_meta() {
-                    for nested in meta_list.nested {
-                        if let NestedMeta::Meta(Meta::NameValue(nv)) = nested {
-                            if nv.path.is_ident("field_name") {
-                                if let syn::Lit::Str(lit_str) = nv.lit {
-                                    field_name = lit_str.value();
-                                }
-                            }
+                if let Ok(Meta::NameValue(meta_name_value)) = attr.parse_meta() {
+                    if meta_name_value.path.is_ident("field_name") {
+                        if let syn::Lit::Str(lit_str) = meta_name_value.lit {
+                            field_name = lit_str.value();
                         }
                     }
                 }
