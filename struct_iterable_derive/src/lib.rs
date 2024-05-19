@@ -3,8 +3,8 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
-    parse_macro_input, Attribute, Data, DeriveInput, Fields, Ident, Lit, Meta, MetaNameValue,
-    NestedMeta,
+    parse_macro_input, Attribute, Data, DeriveInput, Expr, ExprLit, Fields, Ident, Lit, Meta,
+    MetaNameValue,
 };
 
 #[proc_macro_derive(Iterable, attributes(field_name))]
@@ -48,8 +48,14 @@ fn find_custom_name(attrs: &[Attribute], name: &str) -> Option<String> {
         if attr.path().is_ident(name) {
             match attr.parse_args::<MetaNameValue>() {
                 Ok(meta_name_value) if meta_name_value.path.is_ident(name) => {
-                    if let Lit::Str(lit_str) = meta_name_value.lit {
-                        return Some(lit_str.value());
+                    if let Expr::Lit(lit) = meta_name_value.value {
+                        if let ExprLit {
+                            lit: Lit::Str(lit_str),
+                            ..
+                        } = lit
+                        {
+                            return Some(lit_str.value());
+                        }
                     }
                 }
                 _ => {}
